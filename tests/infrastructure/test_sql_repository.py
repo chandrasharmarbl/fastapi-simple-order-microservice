@@ -3,7 +3,7 @@ import pytest_asyncio
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from app.infrastructure.db_models import Base
 from app.infrastructure.sql_repository import SQLItemRepository
-from app.domain.item import ItemCreate, ItemUpdate
+from app.domain.item import ItemCreate, ItemUpdate, ItemBulkUpdate
 
 
 # Isolate tests with their own in-memory DB engine to avoid clashes
@@ -62,3 +62,34 @@ async def test_update_item(repo):
     assert updated_item is not None
     assert updated_item.price == 20.0
     assert updated_item.name == "Test Item"
+
+
+@pytest.mark.asyncio
+async def test_bulk_add_items(repo):
+    items_data = [
+        ItemCreate(name="Bulk Item 1", price=10.0, quantity=1),
+        ItemCreate(name="Bulk Item 2", price=20.0, quantity=2),
+        ItemCreate(name="Bulk Item 3", price=30.0, quantity=3)
+    ]
+    count = await repo.bulk_add(items_data)
+    assert count == 3
+    
+    all_items = await repo.list()
+    assert len(all_items) >= 3
+
+
+@pytest.mark.asyncio
+async def test_bulk_update_items(repo):
+    item1 = await repo.add(ItemCreate(name="Item A", price=10.0))
+    item2 = await repo.add(ItemCreate(name="Item B", price=20.0))
+    
+    updates = [
+        ItemBulkUpdate(id=item1.id, price=15.0),
+        ItemBulkUpdate(id=item2.id, price=25.0)
+    ]
+    
+    count = await repo.bulk_update(updates)
+    assert count == 2
+    
+    fetched1 = await repo.get(item1.id)
+    assert fetched1.price == 15.0

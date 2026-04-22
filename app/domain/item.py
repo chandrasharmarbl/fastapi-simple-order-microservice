@@ -17,6 +17,9 @@ class ItemUpdate(BaseModel):
     quantity: Optional[int] = Field(None, ge=0)
     category_id: Optional[int] = None
 
+class ItemBulkUpdate(ItemUpdate):
+    id: int
+
 
 class Item(ItemCreate):
     model_config = ConfigDict(from_attributes=True)

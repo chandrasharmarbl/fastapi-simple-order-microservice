@@ -1,5 +1,5 @@
 from typing import List, Optional, Protocol
-from app.domain.item import ItemCreate, ItemUpdate, Item
+from app.domain.item import ItemCreate, ItemUpdate, Item, ItemBulkUpdate
 
 
 class ItemRepositoryProtocol(Protocol):
@@ -13,6 +13,12 @@ class ItemRepositoryProtocol(Protocol):
         ...
 
     async def update(self, item_id: int, item_data: ItemUpdate) -> Optional[Item]:
+        ...
+
+    async def bulk_add(self, items: List[ItemCreate]) -> int:
+        ...
+
+    async def bulk_update(self, items: List[ItemBulkUpdate]) -> int:
         ...
 
     async def delete(self, item_id: int) -> bool:
