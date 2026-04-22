@@ -1,14 +1,13 @@
 # FastAPI Simple Order Microservice
 
-This repository contains a FastAPI microservice built strictly using Test-Driven Development (TDD) and Clean Architecture principles. It focuses on asynchronous execution, robust dependency injection, and centralized logging, adhering strictly to SOLID design principles.
+This repository contains a FastAPI microservice for managing items (a simplified order management system). It provides asynchronous CRUD operations for items and automatically dispatches event logs to a separate Analytics microservice whenever an item is created or modified.
 
 ## Features
 
-- **Asynchronous Execution**: Fully utilizes Python's `async`/`await` across HTTP handlers, business logic, external client calls (using `httpx`), and data persistence.
-- **Clean Architecture**: Separated into distinct layers (`domain`, `services`, `infrastructure`, `api`, `core`) to decouple business logic from framework specifics and data storage.
-- **Dependency Injection**: Leverages FastAPI's powerful `Depends` system combined with Python `Protocol`s to achieve true Dependency Inversion, making components highly testable and loosely coupled.
-- **Strict TDD**: Built exclusively through the Red-Green-Refactor cycle ensuring 100% test coverage and deliberate design choices.
-- **Centralized Logging**: Standard Python logging configured gracefully to prevent multiple handler attachment and output structured console logs.
+- **Item Management**: Provides fully asynchronous endpoints to create and retrieve items.
+- **Service-to-Service Communication**: Automatically sends non-blocking HTTP requests to an external Analytics microservice to log system events.
+- **In-Memory Storage**: Uses a fast, in-memory dictionary to store items during the application's runtime.
+- **Centralized Logging**: Outputs structured and consistent console logs for all application activities and external service failures.
 
 ## Getting Started
 
@@ -31,15 +30,23 @@ This repository contains a FastAPI microservice built strictly using Test-Driven
 
 ### Running Tests
 
-Run the fully-asynchronous test suite using `pytest`:
+Run the test suite using `pytest`:
 ```bash
 pytest
 ```
 
-### Starting the Server
+### Starting the Services
 
-Start the application locally using `uvicorn`:
+To see the full service-to-service communication in action, you should run both the Items Microservice and the Analytics Microservice concurrently in separate terminal windows.
+
+**Terminal 1: Start the Items Microservice**
 ```bash
-uvicorn app.main:app --reload
+uvicorn app.main:app --port 8000 --reload
 ```
-You can then access the Swagger UI documentation at [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs).
+Access the Swagger UI documentation for the Items API at [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs).
+
+**Terminal 2: Start the Analytics Microservice**
+```bash
+uvicorn analytics_service.app.main:app --port 8001 --reload
+```
+Access the Swagger UI documentation for the Analytics API at [http://127.0.0.1:8001/docs](http://127.0.0.1:8001/docs).
