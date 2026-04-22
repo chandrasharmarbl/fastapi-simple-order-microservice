@@ -109,3 +109,17 @@ async def test_upsert_item(repo):
     
     assert item2.id == 100
     assert item2.price == 99.0
+
+
+@pytest.mark.asyncio
+async def test_get_items_by_name_raw(repo):
+    await repo.bulk_add([
+        ItemCreate(name="Apple", price=1.0, quantity=10),
+        ItemCreate(name="Banana", price=2.0, quantity=20),
+        ItemCreate(name="Apricot", price=3.0, quantity=30)
+    ])
+    
+    results = await repo.get_items_by_name_raw("Ap%")
+    assert len(results) == 2
+    assert any(r.name == "Apple" for r in results)
+    assert any(r.name == "Apricot" for r in results)

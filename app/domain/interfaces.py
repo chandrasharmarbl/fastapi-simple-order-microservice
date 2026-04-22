@@ -21,6 +21,9 @@ class ItemRepositoryProtocol(Protocol):
     async def upsert(self, item: Item) -> Item:
         ...
 
+    async def get_items_by_name_raw(self, name_prefix: str) -> List[Item]:
+        ...
+
     async def bulk_update(self, items: List[ItemBulkUpdate]) -> int:
         ...
 
