@@ -17,3 +17,8 @@ class ItemRepositoryProtocol(Protocol):
 
     async def delete(self, item_id: int) -> bool:
         ...
+
+
+class AnalyticsClientProtocol(Protocol):
+    async def log_event(self, operation: str, item_id: int, item_name: str, details: str = "") -> None:
+        ...
