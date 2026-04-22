@@ -1,6 +1,7 @@
 from typing import List, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, insert, update
+from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from app.domain.item import ItemCreate, ItemUpdate, Item, ItemBulkUpdate
 from app.domain.interfaces import ItemRepositoryProtocol
 from app.infrastructure.db_models import ItemDB
@@ -59,3 +60,23 @@ class SQLItemRepository(ItemRepositoryProtocol):
         await self.session.execute(update(ItemDB), items_data)
         await self.session.commit()
         return len(items_data)
+
+    async def upsert(self, item: Item) -> Item:
+        stmt = sqlite_insert(ItemDB).values(**item.model_dump())
+        
+        # Determine the columns to update in case of a conflict
+        # We update all columns with the newly provided values except 'id'
+        update_dict = {
+            col.name: col for col in stmt.excluded if col.name != "id"
+        }
+        
+        stmt = stmt.on_conflict_do_update(
+            index_elements=["id"],
+            set_=update_dict
+        ).returning(ItemDB)
+        
+        result = await self.session.execute(stmt)
+        await self.session.commit()
+        
+        db_item = result.scalar_one()
+        return Item.model_validate(db_item)
