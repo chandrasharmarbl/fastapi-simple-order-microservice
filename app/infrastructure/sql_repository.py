@@ -1,6 +1,6 @@
 from typing import List, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, insert, update
+from sqlalchemy import select, insert, update, text
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from app.domain.item import ItemCreate, ItemUpdate, Item, ItemBulkUpdate
 from app.domain.interfaces import ItemRepositoryProtocol
@@ -80,3 +80,14 @@ class SQLItemRepository(ItemRepositoryProtocol):
         
         db_item = result.scalar_one()
         return Item.model_validate(db_item)
+
+    async def get_items_by_name_raw(self, name_prefix: str) -> List[Item]:
+        query = text("""
+            SELECT id, name, description, price, quantity, category_id
+            FROM items
+            WHERE name LIKE :name_prefix
+        """)
+        
+        result = await self.session.execute(query, {"name_prefix": name_prefix})
+        rows = result.mappings().all()
+        return [Item.model_validate(row) for row in rows]
