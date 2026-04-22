@@ -2,6 +2,9 @@ from fastapi import Depends
 from app.infrastructure.repository import InMemoryItemRepository
 from app.infrastructure.analytics_client import AsyncAnalyticsClient
 from app.services.item_service import ItemService
+from sqlalchemy.ext.asyncio import AsyncSession
+from collections.abc import AsyncGenerator
+from app.core.database import async_session_maker
 
 # Singletons to preserve state and connections across requests
 _repository = InMemoryItemRepository()
@@ -21,3 +24,8 @@ def get_item_service(
     analytics_client: AsyncAnalyticsClient = Depends(get_analytics_client)
 ) -> ItemService:
     return ItemService(repository=repository, analytics_client=analytics_client)
+
+
+async def get_db_session() -> AsyncGenerator[AsyncSession, None]:
+    async with async_session_maker() as session:
+        yield session
