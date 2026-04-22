@@ -1,8 +1,9 @@
 from typing import List, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, insert, update, text
+from sqlalchemy.orm import selectinload
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
-from app.domain.item import ItemCreate, ItemUpdate, Item, ItemBulkUpdate
+from app.domain.item import ItemCreate, ItemUpdate, Item, ItemBulkUpdate, ItemWithCategory
 from app.domain.interfaces import ItemRepositoryProtocol
 from app.infrastructure.db_models import ItemDB
 
@@ -91,3 +92,11 @@ class SQLItemRepository(ItemRepositoryProtocol):
         result = await self.session.execute(query, {"name_prefix": name_prefix})
         rows = result.mappings().all()
         return [Item.model_validate(row) for row in rows]
+
+    async def get_items_with_categories(self) -> List[ItemWithCategory]:
+        # selectinload prevents N+1 queries by emitting exactly one separate query 
+        # to fetch all related categories, no matter how many items are returned.
+        stmt = select(ItemDB).options(selectinload(ItemDB.category))
+        result = await self.session.execute(stmt)
+        db_items = result.scalars().all()
+        return [ItemWithCategory.model_validate(db_item) for db_item in db_items]
