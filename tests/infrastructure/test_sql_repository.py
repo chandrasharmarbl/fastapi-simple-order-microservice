@@ -3,7 +3,7 @@ import pytest_asyncio
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from app.infrastructure.db_models import Base
 from app.infrastructure.sql_repository import SQLItemRepository
-from app.domain.item import ItemCreate, ItemUpdate, ItemBulkUpdate
+from app.domain.item import ItemCreate, ItemUpdate, ItemBulkUpdate, Item
 
 
 # Isolate tests with their own in-memory DB engine to avoid clashes
@@ -93,3 +93,19 @@ async def test_bulk_update_items(repo):
     
     fetched1 = await repo.get(item1.id)
     assert fetched1.price == 15.0
+
+
+@pytest.mark.asyncio
+async def test_upsert_item(repo):
+    # Upsert (Insert phase)
+    item_data = Item(id=100, name="Upsert Item", price=10.0, quantity=1)
+    item = await repo.upsert(item_data)
+    assert item.id == 100
+    assert item.price == 10.0
+    
+    # Upsert (Update phase on conflict)
+    updated_data = Item(id=100, name="Upsert Item", price=99.0, quantity=1)
+    item2 = await repo.upsert(updated_data)
+    
+    assert item2.id == 100
+    assert item2.price == 99.0

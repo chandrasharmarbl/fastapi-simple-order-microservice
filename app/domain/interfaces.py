@@ -18,6 +18,9 @@ class ItemRepositoryProtocol(Protocol):
     async def bulk_add(self, items: List[ItemCreate]) -> int:
         ...
 
+    async def upsert(self, item: Item) -> Item:
+        ...
+
     async def bulk_update(self, items: List[ItemBulkUpdate]) -> int:
         ...
 
