@@ -1,5 +1,6 @@
 from typing import Optional
 from pydantic import BaseModel, Field, ConfigDict
+from app.domain.category import Category
 
 
 class ItemCreate(BaseModel):
@@ -24,3 +25,7 @@ class ItemBulkUpdate(ItemUpdate):
 class Item(ItemCreate):
     model_config = ConfigDict(from_attributes=True)
     id: int
+
+
+class ItemWithCategory(Item):
+    category: Optional[Category] = None

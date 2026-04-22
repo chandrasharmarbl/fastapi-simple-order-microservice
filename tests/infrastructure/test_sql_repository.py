@@ -123,3 +123,23 @@ async def test_get_items_by_name_raw(repo):
     assert len(results) == 2
     assert any(r.name == "Apple" for r in results)
     assert any(r.name == "Apricot" for r in results)
+
+
+@pytest.mark.asyncio
+async def test_get_items_with_categories(repo, session):
+    from app.infrastructure.db_models import CategoryDB
+    
+    # Insert a category first
+    cat = CategoryDB(name="Fruits", description="Fresh fruits")
+    session.add(cat)
+    await session.commit()
+    await session.refresh(cat)
+    
+    await repo.bulk_add([
+        ItemCreate(name="Apple", price=1.0, quantity=10, category_id=cat.id)
+    ])
+    
+    items = await repo.get_items_with_categories()
+    assert len(items) == 1
+    assert items[0].category is not None
+    assert items[0].category.name == "Fruits"

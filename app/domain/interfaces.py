@@ -1,5 +1,5 @@
 from typing import List, Optional, Protocol
-from app.domain.item import ItemCreate, ItemUpdate, Item, ItemBulkUpdate
+from app.domain.item import ItemCreate, ItemUpdate, Item, ItemBulkUpdate, ItemWithCategory
 
 
 class ItemRepositoryProtocol(Protocol):
@@ -22,6 +22,9 @@ class ItemRepositoryProtocol(Protocol):
         ...
 
     async def get_items_by_name_raw(self, name_prefix: str) -> List[Item]:
+        ...
+
+    async def get_items_with_categories(self) -> List[ItemWithCategory]:
         ...
 
     async def bulk_update(self, items: List[ItemBulkUpdate]) -> int:
