@@ -20,6 +20,7 @@ def test_item_db_model():
     columns = [c.name for c in mapper.columns]
     assert "id" in columns
     assert "name" in columns
+    assert "description" in columns
     assert "price" in columns
     assert "quantity" in columns
     assert "category_id" in columns

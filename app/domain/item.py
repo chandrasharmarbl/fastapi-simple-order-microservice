@@ -1,5 +1,5 @@
 from typing import Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 
 class ItemCreate(BaseModel):
@@ -19,4 +19,5 @@ class ItemUpdate(BaseModel):
 
 
 class Item(ItemCreate):
+    model_config = ConfigDict(from_attributes=True)
     id: int

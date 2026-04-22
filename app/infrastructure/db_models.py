@@ -20,6 +20,7 @@ class ItemDB(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     name: Mapped[str] = mapped_column(String, index=True)
+    description: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     price: Mapped[float] = mapped_column(Float)
     quantity: Mapped[int] = mapped_column(Integer, default=0)
     
