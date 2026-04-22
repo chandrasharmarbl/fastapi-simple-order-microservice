@@ -1,7 +1,7 @@
 from typing import List, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-from app.domain.item import ItemCreate, ItemUpdate, Item
+from sqlalchemy import select, insert, update
+from app.domain.item import ItemCreate, ItemUpdate, Item, ItemBulkUpdate
 from app.domain.interfaces import ItemRepositoryProtocol
 from app.infrastructure.db_models import ItemDB
 
@@ -42,3 +42,20 @@ class SQLItemRepository(ItemRepositoryProtocol):
         await self.session.commit()
         await self.session.refresh(db_item)
         return Item.model_validate(db_item)
+
+    async def bulk_add(self, items: List[ItemCreate]) -> int:
+        if not items:
+            return 0
+        items_data = [item.model_dump() for item in items]
+        await self.session.execute(insert(ItemDB), items_data)
+        await self.session.commit()
+        return len(items_data)
+
+    async def bulk_update(self, items: List[ItemBulkUpdate]) -> int:
+        if not items:
+            return 0
+        # For bulk updates, the dictionaries must include the primary key column name ('id')
+        items_data = [item.model_dump(exclude_unset=True) for item in items]
+        await self.session.execute(update(ItemDB), items_data)
+        await self.session.commit()
+        return len(items_data)
